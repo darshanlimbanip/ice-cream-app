@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="gu">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ice Cream Stall</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <meta name="theme-color" content="#0ea5e9" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">🍦 Ice Cream</div>
+    <div class="top-actions">
+      <span id="currentShiftBadge" class="badge">શિફ્ટ?</span>
+      <button id="syncBtn" class="btn small">સિંક</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-target="#home">હોમ</button>
+    <button class="tab" data-target="#products">ઉત્પાદનો</button>
+    <button class="tab" data-target="#shift">શિફ્ટ</button>
+    <button class="tab" data-target="#sales">કુલ વેચાણ</button>
+    <button class="tab" data-target="#remarks">ટિપ્પણીઓ</button>
+  </nav>
+
+  <main>
+    <!-- HOME -->
+    <section id="home" class="page active">
+      <div class="section-head">
+        <div class="section-title">બધા આઇસ્ક્રીમ</div>
+        <div id="deviceNameView" class="muted"></div>
+      </div>
+
+      <div id="productList" class="grid"></div>
+
+      <div class="basket">
+        <div id="basketSummary" class="muted">કોઈ વસ્તુ પસંદ નથી</div>
+        <button id="saveOrderBtn" class="btn primary">ઓર્ડર સેવ કરો</button>
+      </div>
+    </section>
+
+    <!-- PRODUCTS (Owner only) -->
+    <section id="products" class="page">
+      <div class="section-head">
+        <div class="section-title">ઉત્પાદનો (માલિક)</div>
+        <div class="muted">પાસવર્ડ જરૂરી</div>
+      </div>
+
+      <div class="row gap">
+        <button id="unlockProductsBtn" class="btn">પેજ અનલોક કરો</button>
+        <button id="addProductBtn" class="btn" disabled>નવો પ્રોડક્ટ ઉમેરો</button>
+        <button id="deviceNameBtn" class="btn" disabled>ડિવાઇસ નામ</button>
+      </div>
+
+      <div class="muted" style="margin-top: .5rem;">તમામ ઉત્પાદન નીચે દર્શાવ્યા છે</div>
+      <div id="adminProductList" class="list"></div>
+    </section>
+
+    <!-- SHIFT -->
+    <section id="shift" class="page">
+      <div class="section-head">
+        <div class="section-title">શિફ્ટ પસંદ કરો</div>
+      </div>
+      <div class="row gap">
+        <button class="btn shiftBtn" data-shift="A">A (10:00–15:00)</button>
+        <button class="btn shiftBtn" data-shift="B">B (15:00–20:00)</button>
+        <button class="btn shiftBtn" data-shift="C">C (20:00–01:00)</button>
+      </div>
+      <div id="shiftInfo" class="muted" style="margin-top:.75rem;"></div>
+    </section>
+
+    <!-- SALES -->
+    <section id="sales" class="page">
+      <div class="section-head">
+        <div class="section-title">કુલ વેચાણ</div>
+        <div class="row gap">
+          <input type="date" id="filterFrom" />
+          <input type="date" id="filterTo" />
+          <select id="filterShift">
+            <option value="">બધું</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+          </select>
+          <button id="applyFiltersBtn" class="btn small">ફિલ્ટર</button>
+        </div>
+      </div>
+
+      <div class="row wrap gap stats">
+        <div class="stat"><div class="k">₹<span id="sumTotal">0</span></div><div class="t">કુલ રકમ</div></div>
+        <div class="stat"><div class="k"><span id="countOrders">0</span></div><div class="t">ઓર્ડર</div></div>
+        <div class="stat"><div class="k"><span id="pendingSync">0</span></div><div class="t">પેન્ડિંગ સિંક</div></div>
+      </div>
+
+      <canvas id="salesChart" width="600" height="220" class="card"></canvas>
+
+      <table class="table" id="salesTable">
+        <thead>
+          <tr>
+            <th>સમય</th>
+            <th>ડિવાઇસ</th>
+            <th>શિફ્ટ</th>
+            <th>વસ્તુઓ</th>
+            <th>કુલ</th>
+            <th>સિંક</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- REMARKS -->
+    <section id="remarks" class="page">
+      <div class="section-head">
+        <div class="section-title">ટિપ્પણીઓ</div>
+      </div>
+
+      <form id="remarkForm" class="card form">
+        <div class="row gap">
+          <input id="remarkName" placeholder="Name (EN)" />
+          <select id="remarkShift">
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+          </select>
+        </div>
+        <textarea id="remarkText" placeholder="Remark (EN)"></textarea>
+        <div class="row right">
+          <button class="btn" type="submit">સેવ</button>
+        </div>
+      </form>
+
+      <div id="remarksList" class="list"></div>
+    </section>
+  </main>
+
+  <!-- Simple modals -->
+  <dialog id="modalAddProduct" class="modal">
+    <form method="dialog" class="form">
+      <h3>નવો પ્રોડક્ટ ઉમેરો</h3>
+      <input id="p_name_en" placeholder="Product Name (EN)" required />
+      <input id="p_name_gu" placeholder="Display Name (GU) - optional" />
+      <input id="p_price" type="number" step="0.01" placeholder="Price" required />
+      <input id="p_color" type="text" placeholder="#RRGGBB" />
+      <label>Photo <input id="p_photo" type="file" accept="image/*" /></label>
+      <menu>
+        <button value="cancel" class="btn">રદ્દ</button>
+        <button id="addProductSave" value="default" class="btn primary">સેવ</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <dialog id="modalDeviceName" class="modal">
+    <form method="dialog" class="form">
+      <h3>ડિવાઇસ નામ</h3>
+      <input id="deviceNameInput" placeholder="e.g. Stall-1" required />
+      <menu>
+        <button value="cancel" class="btn">રદ્દ</button>
+        <button id="deviceNameSave" value="default" class="btn primary">સેવ</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <dialog id="modalUnlock" class="modal">
+    <form method="dialog" class="form">
+      <h3>પાસવર્ડ</h3>
+      <input id="unlockPwd" type="password" placeholder="Ashish@987" />
+      <menu>
+        <button value="cancel" class="btn">રદ્દ</button>
+        <button id="unlockDo" value="default" class="btn primary">Unlock</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <script src="./app.js"></script>
+</body>
+</html>
